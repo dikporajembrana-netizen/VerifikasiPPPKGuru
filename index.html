@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin PPPK Jembrana - Apple-Style Dashboard</title>
+
+    <!-- Chosen Palette: Modern Minimalist Pure White & Army Green (#4B5320) with Vibrant Contrast Metric Cards and Apple-style Glassmorphism UI -->
+    <!-- Application Structure Plan: Single-page interactive administration dashboard featuring Apple iOS inspired aesthetic with spring animations, smooth scale & slide dynamic interactions, Flaticon UI iconography, glassmorphic floating headers and modals, responsive data tables with sticky headers and mobile scroll optimization, dynamic pagination for all tables, instant teacher search, live verification state management, and custom district-filtered Excel CSV exports. -->
+    <!-- Visualization & Content Choices: Metric KPI status cards with period breakdown stats, Flaticon CSS icons for all actions and statuses, dynamic HTML data tables with full pagination and horizontal smooth scrolling for desktop/mobile compatibility, vanilla JS state management connected to Google Apps Script REST API, and Apple modal drawers with copy-to-clipboard functionality. Confirming NO SVG tags / NO Mermaid JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'army-green': '#4B5320',
+                        'army-dark': '#383e18',
+                        'army-light': '#6c7a2d',
+                        'apple-bg': '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Flaticon UIicons CDN -->
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-bold-rounded/css/uicons-bold-rounded.css'>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+
+    <style>
+        :root {
+            --apple-ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --apple-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Apple Style Physics & Glassmorphism */
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .apple-glass-dark {
+            background: rgba(75, 83, 32, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .apple-btn {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .apple-btn:active {
+            transform: scale(0.95);
+        }
+
+        .apple-card-hover {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .apple-card-hover:hover {
+            transform: translateY(-4px) scale(1.008);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+        }
+        .apple-card-hover:active {
+            transform: scale(0.98);
+        }
+
+        /* Apple Animations */
+        @keyframes applePopIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.94) translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes appleSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes appleFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .animate-apple-pop {
+            animation: applePopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-apple-slide {
+            animation: appleSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-apple-fade {
+            animation: appleFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Table Scroll Wrapper */
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.6);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .tab-active {
+            background-color: #4B5320;
+            color: #ffffff;
+            box-shadow: 0 8px 16px -4px rgba(75, 83, 32, 0.3);
+        }
+        .tab-inactive {
+            background-color: transparent;
+            color: #4b5563;
+        }
+        .tab-inactive:hover {
+            background-color: #f1f5f9;
+            color: #4B5320;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full min-h-screen flex flex-col md:flex-row overflow-x-hidden antialiased selection:bg-army-green selection:text-white">
+
+    <!-- Mobile Header with Apple Glassmorphism -->
+    <header class="md:hidden sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-200/80 text-slate-900 p-4 flex justify-between items-center shrink-0 z-40 shadow-xs">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-army-green text-white flex items-center justify-center font-bold shadow-sm">
+                <i class="fi fi-sr-shield-check text-base"></i>
+            </div>
+            <div>
+                <h1 class="text-base font-extrabold leading-tight tracking-tight text-slate-900">Admin PPPK</h1>
+                <p class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Kabupaten Jembrana</p>
+            </div>
+        </div>
+        <button onclick="toggleSidebar()" class="apple-btn p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center focus:outline-none">
+            <i class="fi fi-rr-menu-burger text-lg"></i>
+        </button>
+    </header>
+
+    <!-- Mobile Overlay Sidebar -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 hidden md:hidden animate-apple-fade transition-opacity"></div>
+
+    <!-- Sidebar with Army Green Premium Header -->
+    <aside id="sidebar" class="w-72 bg-white border-r border-slate-200/80 text-slate-800 flex flex-col fixed md:relative z-50 inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] h-full shadow-2xl md:shadow-none">
+        
+        <!-- Sidebar Top Header -->
+        <div class="p-6 bg-army-green text-white flex justify-between items-center shrink-0 relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="relative z-10 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white text-lg font-bold border border-white/20">
+                    <i class="fi fi-sr-shield-check"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tight">Admin PPPK</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Kabupaten Jembrana</p>
+                </div>
+            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-white/80 hover:text-white p-2 rounded-xl hover:bg-white/10 transition">
+                <i class="fi fi-rr-cross text-sm"></i>
+            </button>
+        </div>
+        
+        <nav class="flex-1 p-5 space-y-2.5 overflow-y-auto">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-3">Navigasi Utama</div>
+            
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full text-left px-4 py-3.5 rounded-2xl tab-active apple-btn font-bold text-sm flex items-center gap-3.5">
+                <i class="fi fi-rr-dashboard text-lg"></i>
+                <span>Dashboard Analitik</span>
+            </button>
+            
+            <button onclick="switchView('status')" id="nav-status" class="w-full text-left px-4 py-3.5 rounded-2xl tab-inactive apple-btn font-bold text-sm flex items-center gap-3.5">
+                <i class="fi fi-rr-file-edit text-lg"></i>
+                <span>Status Verifikasi</span>
+            </button>
+        </nav>
+
+        <div class="p-5 bg-slate-50 border-t border-slate-200/80 shrink-0 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Sistem Terhubung REST API</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">&copy; 2026 Admin PPPK Jembrana</p>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 relative h-[calc(100vh-65px)] md:h-screen w-full">
+        
+        <!-- Loading Dynamic Overlay -->
+        <div id="loading" class="fixed inset-0 z-50 bg-white/90 backdrop-blur-md flex flex-col items-center justify-center animate-apple-fade">
+            <div class="w-14 h-14 rounded-2xl bg-army-green/10 flex items-center justify-center text-army-green text-2xl mb-4 animate-bounce shadow-sm">
+                <i class="fi fi-rr-spinner animate-spin"></i>
+            </div>
+            <p class="text-army-green font-extrabold text-base tracking-tight">Sinkronisasi Data Spreadsheet...</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">Memuat kuota dan status berkas terbaru</p>
+        </div>
+
+        <!-- 1. DASHBOARD VIEW -->
+        <div id="view-dashboard" class="hidden space-y-8 animate-apple-slide pb-12 max-w-7xl mx-auto">
+            
+            <!-- Page Header Area -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Dashboard Analitik PPPK</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Pemantauan real-time kuota dan progres verifikasi guru PPPK Jembrana.</p>
+                </div>
+                
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button onclick="openModalSearch()" class="apple-btn flex-1 sm:flex-none justify-center bg-army-green hover:bg-army-dark shadow-md shadow-army-green/20 text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fi fi-rr-search text-base"></i>
+                        <span>Cari Guru</span>
+                    </button>
+                    
+                    <button onclick="fetchData()" class="apple-btn flex-1 sm:flex-none justify-center bg-white text-slate-700 border border-slate-200/80 shadow-xs hover:bg-slate-50 px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2">
+                        <i class="fi fi-rr-refresh text-base text-army-green"></i>
+                        <span class="hidden sm:inline">Refresh Data</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Total Guru Widget & Statistik Cards (High Contrast & Breakdown Stats) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
+                
+                <!-- Card 1: Total Kuota Guru PPPK -->
+                <div class="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white rounded-3xl p-5 shadow-lg shadow-amber-500/15 apple-card-hover flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-amber-100 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fi fi-sr-users-alt text-xs"></i> Total Kuota Guru
+                            </span>
+                            <span class="text-[11px] font-black bg-black/20 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full" id="dash-total-pct">0%</span>
+                        </div>
+                        <div class="text-3xl font-black text-white tracking-tight" id="dash-total-all">0/602</div>
+                        <div class="text-xs text-amber-100 font-medium mt-1" id="dash-total-diff">Sisa 602 dari maksimal</div>
+                        
+                        <div class="w-full bg-black/25 rounded-full h-2.5 mt-3 overflow-hidden p-0.5 backdrop-blur-xs">
+                            <div id="dash-total-bar" class="bg-yellow-300 h-1.5 rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col space-y-1 mt-4 pt-3 border-t border-amber-400/30 text-[11px]">
+                        <div class="flex justify-between items-center">
+                            <span class="text-amber-100 font-medium">1 Peb 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-tot-s1">0/362</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-amber-100 font-medium">1 Mar 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-tot-s2">0/240</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 2: Lengkap -->
+                <div onclick="showDetailStatus('Lengkap')" class="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white rounded-3xl p-5 shadow-lg shadow-emerald-600/15 apple-card-hover cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-emerald-100 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fi fi-sr-check-circle text-xs"></i> Lengkap
+                            </span>
+                            <span class="bg-emerald-800/60 text-emerald-100 rounded-full px-2.5 py-0.5 text-[10px] font-bold">Rincian</span>
+                        </div>
+                        <div class="text-3xl font-black text-white tracking-tight" id="dash-lengkap">0</div>
+                    </div>
+
+                    <!-- Breakdown 1 Peb & 1 Mar -->
+                    <div class="flex flex-col space-y-1 mt-4 pt-3 border-t border-emerald-400/30 text-[11px]">
+                        <div class="flex justify-between items-center">
+                            <span class="text-emerald-100 font-medium">1 Peb 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-lengkap-s1">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-emerald-100 font-medium">1 Mar 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-lengkap-s2">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Belum Lengkap -->
+                <div onclick="showDetailStatus('Belum Lengkap')" class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-3xl p-5 shadow-lg shadow-orange-500/15 apple-card-hover cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-orange-100 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fi fi-sr-time-past text-xs"></i> Belum Lengkap
+                            </span>
+                            <span class="bg-orange-700/60 text-orange-100 rounded-full px-2.5 py-0.5 text-[10px] font-bold">Rincian</span>
+                        </div>
+                        <div class="text-3xl font-black text-white tracking-tight" id="dash-belum-lengkap">0</div>
+                    </div>
+
+                    <!-- Breakdown 1 Peb & 1 Mar -->
+                    <div class="flex flex-col space-y-1 mt-4 pt-3 border-t border-orange-400/30 text-[11px]">
+                        <div class="flex justify-between items-center">
+                            <span class="text-orange-100 font-medium">1 Peb 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-belum-lengkap-s1">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-orange-100 font-medium">1 Mar 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-belum-lengkap-s2">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Perbaikan -->
+                <div onclick="showDetailStatus('Perbaikan')" class="bg-gradient-to-br from-rose-600 to-rose-700 text-white rounded-3xl p-5 shadow-lg shadow-rose-600/15 apple-card-hover cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-rose-100 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fi fi-sr-exclamation text-xs"></i> Perbaikan
+                            </span>
+                            <span class="bg-rose-800/60 text-rose-100 rounded-full px-2.5 py-0.5 text-[10px] font-bold">Rincian</span>
+                        </div>
+                        <div class="text-3xl font-black text-white tracking-tight" id="dash-perbaikan">0</div>
+                    </div>
+
+                    <!-- Breakdown 1 Peb & 1 Mar -->
+                    <div class="flex flex-col space-y-1 mt-4 pt-3 border-t border-rose-400/30 text-[11px]">
+                        <div class="flex justify-between items-center">
+                            <span class="text-rose-100 font-medium">1 Peb 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-perbaikan-s1">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-rose-100 font-medium">1 Mar 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-perbaikan-s2">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Belum Diverifikasi -->
+                <div onclick="showDetailStatus('Belum Di Verifikasi')" class="bg-gradient-to-br from-slate-700 to-slate-800 text-white rounded-3xl p-5 shadow-lg shadow-slate-800/15 apple-card-hover cursor-pointer flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-slate-300 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fi fi-sr-cross-circle text-xs"></i> Blm Diverifikasi
+                            </span>
+                            <span class="bg-slate-900/60 text-slate-300 rounded-full px-2.5 py-0.5 text-[10px] font-bold">Rincian</span>
+                        </div>
+                        <div class="text-3xl font-black text-white tracking-tight" id="dash-kosong">0</div>
+                    </div>
+
+                    <!-- Breakdown 1 Peb & 1 Mar -->
+                    <div class="flex flex-col space-y-1 mt-4 pt-3 border-t border-slate-600/40 text-[11px]">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300 font-medium">1 Peb 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-kosong-s1">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300 font-medium">1 Mar 2022:</span>
+                            <span class="font-extrabold bg-black/20 px-2 py-0.5 rounded-lg text-white" id="dash-kosong-s2">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Statistik Kecamatan Section (Fully Responsive Mobile Scroll Table with Pagination) -->
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+                <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white shrink-0">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                            <i class="fi fi-rr-marker text-army-green text-base"></i>
+                            <span>Distribusi Guru per Kecamatan</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">Klik pada baris kecamatan untuk melihat rincian daftar nama guru.</p>
+                    </div>
+                    
+                    <button onclick="openModalExportExcel()" class="apple-btn w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-sm shadow-emerald-600/20 flex items-center justify-center gap-2">
+                        <i class="fi fi-rr-download text-sm"></i>
+                        <span>Export Excel (Pilih Kecamatan)</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Horizontal Scroll Cue -->
+                <div class="block sm:hidden bg-slate-50 px-4 py-2 border-b border-slate-100 text-[11px] font-bold text-slate-500 flex items-center justify-between shrink-0">
+                    <span class="flex items-center gap-1.5"><i class="fi fi-rr-arrows-cross text-army-green"></i> Geser tabel untuk melihat data lengkap</span>
+                    <span class="text-army-green font-extrabold">&rarr;</span>
+                </div>
+
+                <div class="table-responsive-wrapper flex-1">
+                    <table class="w-full text-left border-collapse min-w-[620px] sm:min-w-full">
+                        <thead>
+                            <tr class="bg-army-green text-white text-xs uppercase tracking-wider font-extrabold">
+                                <th class="py-4 px-6 sticky top-0 left-0 bg-army-green z-20 shadow-xs">Kecamatan</th>
+                                <th class="py-4 px-6 text-center sticky top-0 bg-army-green z-10">1 Pebruari 2022</th>
+                                <th class="py-4 px-6 text-center sticky top-0 bg-army-green z-10">1 Maret 2022</th>
+                                <th class="py-4 px-6 text-center sticky top-0 bg-army-green z-10">Total Saat Ini</th>
+                                <th class="py-4 px-6 text-center sticky top-0 bg-army-green z-10">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-kecamatan-body" class="bg-white divide-y divide-slate-100 text-sm">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer Kecamatan -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 text-xs font-semibold text-slate-600">
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                        <div class="flex items-center gap-2">
+                            <span>Tampilkan</span>
+                            <select id="kec-limit-select" onchange="changeKecLimit(this.value)" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-army-green shadow-2xs">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span>per halaman</span>
+                        </div>
+                        <span id="kec-page-info" class="text-slate-500 font-medium">Menampilkan 0 data</span>
+                    </div>
+                    <div class="flex items-center gap-1.5" id="kec-pagination-btns">
+                        <!-- Dynamic Pagination Buttons -->
+                    </div>
+                </div>
+
+                <!-- Debug Box -->
+                <div id="debug-lainnya" class="hidden p-4 bg-rose-50 border-t border-rose-100 text-sm text-rose-800">
+                    <p class="font-bold mb-1 flex items-center gap-2">
+                        <i class="fi fi-rr-exclamation text-rose-600"></i> Data Guru Tanpa UPT Kecamatan Diketahui:
+                    </p>
+                    <ul id="list-lainnya" class="list-disc pl-5 space-y-1 max-h-40 overflow-y-auto text-xs mt-2 font-mono"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. STATUS VERIFIKASI VIEW -->
+        <div id="view-status" class="hidden space-y-6 animate-apple-slide pb-12 max-w-7xl mx-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Seluruh Status Verifikasi</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1 font-medium">Daftar rekapitulasi peninjauan berkas guru PPPK Jembrana secara menyeluruh.</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-210px)]">
+                <div class="p-4 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fi fi-rr-filter text-army-green"></i> Filter Status:
+                    </span>
+                    <select id="filter-status" onchange="resetStatusPageAndRender()" class="w-full sm:w-auto bg-white border border-slate-300 rounded-2xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-army-green font-bold text-slate-800 shadow-xs">
+                        <option value="all">Tampilkan Semua Data Guru</option>
+                        <option value="Lengkap">Lengkap (Valid)</option>
+                        <option value="Belum Lengkap">Belum Lengkap</option>
+                        <option value="Perbaikan">Perlu Perbaikan</option>
+                        <option value="">Belum Ditinjau</option>
+                    </select>
+                </div>
+
+                <!-- Mobile Horizontal Scroll Hint -->
+                <div class="block sm:hidden bg-slate-100 px-4 py-2 text-[11px] font-bold text-slate-500 flex items-center justify-between border-b border-slate-200 shrink-0">
+                    <span class="flex items-center gap-1.5"><i class="fi fi-rr-arrows-cross text-army-green"></i> Geser tabel untuk detail lengkap</span>
+                    <span class="text-army-green font-extrabold">&rarr;</span>
+                </div>
+                
+                <!-- Fixed Sticky Header Bug Table -->
+                <div class="table-responsive-wrapper flex-1 bg-white overflow-auto max-h-full">
+                    <table class="w-full text-left text-sm min-w-[750px] sm:min-w-full border-collapse">
+                        <thead class="bg-army-green text-white text-xs uppercase tracking-wider font-extrabold shadow-sm">
+                            <tr>
+                                <th class="py-4 px-6 sticky top-0 left-0 bg-army-green z-30 shadow-xs">Nama & NIP</th>
+                                <th class="py-4 px-6 sticky top-0 bg-army-green z-10">Unit Kerja</th>
+                                <th class="py-4 px-6 sticky top-0 bg-army-green z-10">Status Verifikasi</th>
+                                <th class="py-4 px-6 sticky top-0 bg-army-green z-10">Catatan Kekurangan</th>
+                                <th class="py-4 px-6 text-center sticky top-0 bg-army-green z-10">Sumber DB</th>
+                            </tr>
+                        </thead>
+                        <tbody id="status-table-body" class="bg-white divide-y divide-slate-100">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer Status Verifikasi -->
+                <div class="p-4 border-t border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 text-xs font-semibold text-slate-600">
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                        <div class="flex items-center gap-2">
+                            <span>Tampilkan</span>
+                            <select id="status-limit-select" onchange="changeStatusLimit(this.value)" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-army-green shadow-2xs">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">Semua</option>
+                            </select>
+                            <span>data per halaman</span>
+                        </div>
+                        <span id="status-page-info" class="text-slate-500 font-medium">Menampilkan 0 data</span>
+                    </div>
+                    <div class="flex items-center gap-1.5" id="status-pagination-btns">
+                        <!-- Dynamic Pagination Buttons -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: PENCARIAN & VERIFIKASI -->
+    <div id="modal-search" class="fixed inset-0 bg-slate-900/60 z-[60] hidden items-center justify-center p-3 sm:p-6 backdrop-blur-md transition-all">
+        <div class="bg-white w-full max-w-5xl h-[92vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden relative border border-white/60 animate-apple-pop mx-auto">
+            
+            <!-- Modal Header -->
+            <div class="bg-army-green p-5 flex justify-between items-center text-white shrink-0 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center text-white">
+                        <i class="fi fi-rr-search text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-extrabold leading-tight">Pencarian & Verifikasi Guru</h2>
+                        <p class="text-xs text-emerald-100 font-medium">Cari profil dan perbarui verifikasi berkas secara langsung</p>
+                    </div>
+                </div>
+                <button onclick="closeModalSearch()" class="apple-btn text-white/80 hover:text-white p-2 bg-black/20 hover:bg-black/30 rounded-xl focus:outline-none font-bold text-sm">
+                    <i class="fi fi-rr-cross"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 flex flex-col space-y-6 bg-slate-50">
+                <div class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-slate-200/80 flex flex-col sm:flex-row gap-3 shrink-0 relative">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fi fi-rr-search text-base"></i>
+                        </div>
+                        <input type="text" id="searchInput" placeholder="Ketikkan Nama Guru (minimal 2 huruf)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-army-green focus:bg-white outline-none transition" oninput="handleSearchInput(event)" onkeyup="if(event.key === 'Enter') searchGuruModal()" autocomplete="off">
+                        
+                        <ul id="search-suggestions" class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-2xl mt-2 hidden max-h-60 overflow-y-auto divide-y divide-slate-100 left-0">
+                        </ul>
+                    </div>
+                    <button onclick="searchGuruModal()" class="apple-btn w-full sm:w-auto bg-army-green hover:bg-army-dark text-white font-extrabold rounded-xl text-xs sm:text-sm px-6 py-3 transition shadow-sm flex items-center justify-center gap-2">
+                        <i class="fi fi-rr-search"></i>
+                        <span>Cari Data</span>
+                    </button>
+                </div>
+
+                <div id="modal-search-results" class="space-y-6 flex-1 pb-4">
+                    <div class="h-full flex items-center justify-center text-slate-400 flex-col gap-2 min-h-[250px]">
+                        <i class="fi fi-rr-document text-4xl text-slate-300"></i>
+                        <p class="text-sm font-semibold text-center text-slate-500">Silakan ketik nama guru pada kolom pencarian di atas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DETAIL STATUS LIST WITH PAGINATION -->
+    <div id="modal-detail-status" class="fixed inset-0 bg-slate-900/60 z-[70] hidden items-center justify-center p-3 sm:p-6 backdrop-blur-md transition-all">
+        <div class="bg-white w-full max-w-6xl h-[92vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden relative animate-apple-pop mx-auto border border-white/60">
+            
+            <!-- Modal Header -->
+            <div class="bg-white p-4 sm:p-6 border-b border-slate-100 flex flex-col gap-4 shrink-0 shadow-xs">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 w-full">
+                    <div>
+                        <h2 class="text-lg sm:text-2xl font-black text-slate-900" id="detail-modal-title">Daftar Guru</h2>
+                        <p class="text-xs text-slate-500 mt-0.5 font-medium">Klik pada nama guru untuk membuka form verifikasi berkas lengkap.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <button onclick="copyToClipboard()" id="btn-copy-text" class="apple-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition">
+                            <i class="fi fi-rr-copy"></i>
+                            <span>Salin Teks (Format WA)</span>
+                        </button>
+                        <button onclick="closeDetailStatus()" class="apple-btn text-slate-400 hover:text-rose-600 transition p-2.5 bg-slate-100 rounded-xl hover:bg-rose-50 focus:outline-none font-bold">
+                            <i class="fi fi-rr-cross text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fi fi-rr-search text-xs"></i>
+                        </div>
+                        <input type="text" id="detail-search-input" placeholder="Cari Nama atau NIP dalam daftar ini..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-army-green transition font-medium" oninput="resetDetailPagesAndRender()">
+                    </div>
+                    
+                    <select id="detail-filter-kec" class="w-full sm:w-60 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-army-green transition font-bold text-slate-700" onchange="resetDetailPagesAndRender()">
+                        <option value="all">Semua Kecamatan</option>
+                        <option value="Pekutatan">Pekutatan</option>
+                        <option value="Mendoyo">Mendoyo</option>
+                        <option value="Jembrana">Jembrana</option>
+                        <option value="Negara">Negara</option>
+                        <option value="Melaya">Melaya</option>
+                        <option value="Lainnya">Lainnya (Tidak Diketahui)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Modal Scroll Table Body -->
+            <div class="flex-1 bg-slate-50 p-3 sm:p-6 overflow-hidden flex flex-col">
+                
+                <!-- Mobile Touch Scroll Cue -->
+                <div class="block sm:hidden bg-slate-200/80 px-3 py-1.5 rounded-lg text-[10px] font-bold text-slate-600 flex items-center justify-between mb-2 shrink-0">
+                    <span class="flex items-center gap-1"><i class="fi fi-rr-arrows-cross text-army-green"></i> Geser tabel secara horizontal</span>
+                    <span>&rarr;</span>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 flex-1 overflow-hidden flex flex-col">
+                    <div class="table-responsive-wrapper flex-1">
+                        <table class="w-full text-left min-w-[650px] sm:min-w-full border-collapse">
+                            <thead class="bg-army-green text-white text-xs uppercase tracking-wider font-extrabold sticky top-0 z-10" id="detail-table-head">
+                            </thead>
+                            <tbody id="detail-table-body" class="bg-white divide-y divide-slate-100 text-xs sm:text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Footer Modal Detail -->
+                    <div class="p-4 border-t border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 text-xs font-semibold text-slate-600">
+                        <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                            <div class="flex items-center gap-2">
+                                <span>Tampilkan</span>
+                                <select id="detail-limit-select" onchange="changeDetailLimit(this.value)" class="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-army-green shadow-2xs">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="all">Semua</option>
+                                </select>
+                                <span>data per halaman</span>
+                            </div>
+                            <span id="detail-page-info" class="text-slate-500 font-medium">Menampilkan 0 data</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" id="detail-pagination-btns">
+                            <!-- Dynamic Pagination Buttons -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EXPORT EXCEL PILIH KECAMATAN -->
+    <div id="modal-export-excel" class="fixed inset-0 bg-slate-900/60 z-[80] hidden items-center justify-center p-4 backdrop-blur-md transition-all">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col overflow-hidden relative animate-apple-pop mx-auto border border-white/60">
+            <div class="bg-army-green p-5 text-white flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center text-white">
+                        <i class="fi fi-rr-download text-base"></i>
+                    </div>
+                    <h3 class="font-extrabold text-base">Export Excel Pilih Kecamatan</h3>
+                </div>
+                <button onclick="closeModalExportExcel()" class="apple-btn text-white/80 hover:text-white font-bold text-sm">
+                    <i class="fi fi-rr-cross"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-xs sm:text-sm text-slate-600 font-medium">Pilih kecamatan mana saja yang ingin diexport ke file Excel CSV:</p>
+                
+                <div class="space-y-3 border border-slate-200/80 p-4 rounded-2xl bg-slate-50">
+                    <label class="flex items-center gap-3 font-extrabold text-slate-800 cursor-pointer text-xs sm:text-sm">
+                        <input type="checkbox" id="chk-all-kec" onchange="toggleAllKec(this)" checked class="w-4 h-4 text-army-green rounded focus:ring-army-green">
+                        <span>Pilih Semua Kecamatan</span>
+                    </label>
+                    <hr class="border-slate-200">
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer"><input type="checkbox" name="kec-opt" value="Pekutatan" checked class="w-4 h-4 text-army-green rounded"> Pekutatan</label>
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer"><input type="checkbox" name="kec-opt" value="Mendoyo" checked class="w-4 h-4 text-army-green rounded"> Mendoyo</label>
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer"><input type="checkbox" name="kec-opt" value="Jembrana" checked class="w-4 h-4 text-army-green rounded"> Jembrana</label>
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer"><input type="checkbox" name="kec-opt" value="Negara" checked class="w-4 h-4 text-army-green rounded"> Negara</label>
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer"><input type="checkbox" name="kec-opt" value="Melaya" checked class="w-4 h-4 text-army-green rounded"> Melaya</label>
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer"><input type="checkbox" name="kec-opt" value="Lainnya" checked class="w-4 h-4 text-army-green rounded"> Lainnya</label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 pt-2">
+                    <button onclick="closeModalExportExcel()" class="apple-btn bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 transition">Batal</button>
+                    <button onclick="executeExportExcel()" class="apple-btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-xs font-extrabold shadow-sm flex items-center gap-2 transition">
+                        <i class="fi fi-rr-download text-xs"></i>
+                        <span>Download Excel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxQiYZyj0iGWtnuulgsMO4qXQjD9N0S6svO6IVl4Kh4Fl_XeT8C6lTy3nOrhDp1Oys/exec';
+        
+        // Batas Maksimal Kuota Guru PPPK
+        const MAX_S1_QUOTA = 362; // Maksimal untuk 1 Pebruari 2022
+        const MAX_S2_QUOTA = 240; // Maksimal untuk 1 Maret 2022
+        const MAX_GURU_QUOTA = MAX_S1_QUOTA + MAX_S2_QUOTA; // Total kuota = 602
+
+        let dbData = { "1 Pebruari 2022": [], "1 Maret 2022": [] };
+        let debugLainnyaList = [];
+        let currentDetailStatusFilter = '';
+        let currentFilteredDetailData = [];
+
+        // Pagination State Variables
+        let kecCurrentPage = 1;
+        let kecLimit = 10;
+        let kecDataList = [];
+
+        let statusCurrentPage = 1;
+        let statusLimit = 10;
+
+        let detailCurrentPage = 1;
+        let detailLimit = 10;
+
+        const mappingKecamatan = {
+            "Pekutatan": [
+                'SMPN 1 Pekutatan', 'SMPN 2 Pekutatan', 'SDN 1 Medewi', 'SDN 2 Medewi', 'SDN 3 Medewi', 
+                'SDN 4 Medewi', 'SDN 1 Pulukan', 'SDN 2 Pulukan', 'SDN 3 Pulukan', 'SDN 1 Pekutatan', 
+                'SDN 2 Pekutatan', 'SDN 3 Pekutatan', 'SDN 4 Pekutatan', 'SDN 5 Pekutatan', 'SDN Pangyangan', 
+                'SDN 1 Gumrih', 'SDN 2 Gumrih', 'SDN 1 Pengeragoan', 'SDN 2 Pengeragoan', 'SDN 3 Pengeragoan', 
+                'SDN 1 Asahduren', 'SDN 2 Asahduren', 'SDN 3 Asahduren', 'SDN 1 Manggissari', 'SDN 2 Manggissari', 
+                'TK Negeri Pembina Pekutatan'
+            ],
+            "Mendoyo": [
+                'SMPN 1 Mendoyo', 'SMPN 2 Mendoyo', 'SMPN 3 Mendoyo', 'SMPN 4 Mendoyo', 'SMPN 5 Mendoyo',
+                'SDN 1 Mendoyo Dauh Tukad', 'SDN 2 Mendoyo Dauh Tukad', 'SDN 3 Mendoyo Dauh Tukad', 
+                'SDN 1 Mendoyo Dangin Tukad', 'SDN 2 Mendoyo Dangin Tukad', 'SDN 1 Pohsanten', 'SDN 2 Pohsanten', 
+                'SDN 3 Pohsanten', 'SDN 4 Pohsanten', 'SDN 5 Pohsanten', 'SDN 1 Pergung', 'SDN 2 Pergung', 
+                'SDN 3 Pergung', 'SDN 1 Tegalcangkring', 'SDN 2 Tegalcangkring', 'SDN 3 Tegalcangkring', 
+                'SDN 4 Tegalcangkring', 'SDN 5 Tegalcangkring', 'SDN 6 Tegalcangkring', 'SDN Delodbrawah',
+                'SDN 1 Penyaringan', 'SDN 2 Penyaringan', 'SDN 3 Penyaringan', 'SDN 4 Penyaringan', 'SDN 5 Penyaringan',
+                'SDN 6 Penyaringan', 'SDN 7 Penyaringan', 'SDN 8 Penyaringan', 'SDN 9 Penyaringan', 'SDN 1 Yehembang Kauh',
+                'SDN 2 Yehembang Kauh', 'SDN 3 Yehembang Kauh', 'SDN 4 Yehembang Kauh', 'SDN 5 Yehembang Kauh', 
+                'SDN 1 Yehembang', 'SDN 2 Yehembang', 'SDN 3 Yehembang', 'SDN 4 Yehembang', 'SDN 5 Yehembang', 
+                'SDN 6 Yehembang', 'SDN 7 Yehembang', 'SDN 1 Yehembang Kangin', 'SDN 2 Yehembang Kangin', 
+                'SDN 3 Yehembang Kangin', 'SDN 1 Yeh Sumbul', 'SDN 2 Yeh Sumbul', 'SDN 3 Yeh Sumbul', 'TK Negeri Pembina Mendoyo'
+            ],
+            "Jembrana": [
+                'SDN 1 Perancak', 'SDN 2 Perancak', 'SDN 1 Air Kuning', 'SDN 2 Air Kuning', 'SDN 1 Sangkaragung',
+                'SDN 2 Sangkaragung', 'SDN 1 Dangin Tukadaya', 'SDN 2 Dangin Tukadaya', 'SDN 3 Dangin Tukadaya', 
+                'SDN 1 Dauhwaru', 'SDN 2 Dauhwaru', 'SDN 3 Dauhwaru', 'SDN 4 Dauhwaru', 'SDN 5 Dauhwaru', 'SDN 6 Dauhwaru',
+                'SDN 1 Batuagung', 'SDN 2 Batuagung', 'SDN 3 Batuagung', 'SDN 4 Batuagung', 'SDN 5 Batuagung',
+                'SDN 6 Batuagung', 'SDN Budeng', 'SDN 1 Pendem', 'SDN 2 Pendem', 'SDN 3 Pendem', 'SDN 4 Pendem', 
+                'SDN 5 Pendem', 'SDN 6 Pendem', 'SDN 1 Loloan Timur', 'SDN 2 Loloan Timur', 'SDN 3 Loloan Timur', 
+                'SDN 1 Yeh Kuning', 'SDN 2 Yeh Kuning', 'TKN Pembina Jembrana (Sangkaragung)', 'TKN Jembrana (Canang Sari)'
+            ],
+            "Negara": [
+                'SMPN 1 Negara', 'SMPN 3 Negara', 'SMPN 2 Negara', 'SMPN 4 Negara', 'SMPN 5 Negara', 'SMPN 6 Negara',
+                'SDN 1 Loloan Barat', 'SDN 2 Loloan Barat', 'SDN 1 Baler Bale Agung', 'SDN 2 Baler Bale Agung', 
+                'SDN 3 Baler Bale Agung', 'SDN 4 Baler Bale Agung', 'SDN 5 Baler Bale Agung', 'SDN 1 Banjar Tengah', 
+                'SDN 2 Banjar Tengah', 'SDN 3 Banjar Tengah', 'SDN 1 Lelateng', 'SDN 2 Lelateng', 'SDN 3 Lelateng', 
+                'SDN 4 Lelateng', 'SDN 1 Tegalbadeng Barat', 'SDN 2 Tegalbadeng Barat', 'SDN 3 Tegalbadeng Barat', 
+                'SDN 1 Tegalbadeng Timur', 'SDN 2 Tegalbadeng Timur', 'SDN 1 Cupel', 'SDN 2 Cupel', 'SDN 1 Pengambengan', 
+                'SDN 2 Pengambengan', 'SDN 3 Pengambengan', 'SDN 1 Baluk', 'SDN 2 Baluk', 'SDN 3 Baluk', 'SDN 4 Baluk', 
+                'SDN 5 Baluk', 'SDN 1 Banyubiru', 'SDN 2 Banyubiru', 'SDN 3 Banyubiru', 'SDN 4 Banyubiru', 'SDN 1 Kaliakah', 
+                'SDN 2 Kaliakah', 'SDN 3 Kaliakah', 'SDN 4 Kaliakah', 'SDN 5 Kaliakah', 'SDN 1 Berangbang', 'SDN 2 Berangbang',
+                'SDN 3 Berangbang', 'SDN 4 Berangbang', 'SDN 5 Berangbang', 'TK Negeri Negara', 'TK Negeri Pembina Negara'
+            ],
+            "Melaya": [
+                'SMPN 1 Melaya', 'SMPN 2 Melaya', 'SMPN 3 Melaya', 'SMPN 4 Melaya', 'SMPN 5 Melaya',
+                'SDN 2 Gilimanuk', 'SDN 1 Gilimanuk', 'SDN 3 Gilimanuk', 'SDN 4 Gilimanuk', 'SDN 1 Melaya',
+                'SDN 2 Melaya', 'SDN 3 Melaya', 'SDN 4 Melaya', 'SDN 5 Melaya', 'SDN 6 Melaya', 'SDN 7 Melaya', 
+                'SDN 1 Nusasari', 'SDN 2 Nusasari', 'SDN 1 Ekasari', 'SDN 2 Ekasari', 'SDN 1 Warnasari', 'SDN 2 Warnasari', 
+                'SDN 1 Candikusuma', 'SDN 2 Candikusuma', 'SDN 3 Candikusuma', 'SDN 4 Candikusuma', 'SDN 1 Tuwed', 
+                'SDN 2 Tuwed', 'SDN 3 Tuwed', 'SDN 1 Tukadaya', 'SDN 2 Tukadaya', 'SDN 3 Tukadaya', 'SDN 4 Tukadaya', 
+                'SDN 5 Tukadaya', 'SDN 1 Manistutu', 'SDN 2 Manistutu', 'SDN 3 Manistutu', 'SDN 4 Manistutu', 
+                'SDN 5 Manistutu', 'SDN 6 Manistutu', 'TK Negeri Melaya', 'TK Negeri Pembina Melaya'
+            ]
+        };
+
+        function getKecamatan(unitKerja) {
+            if (!unitKerja) return "Tidak Diketahui";
+            let unitKerjaUpper = unitKerja.toString().toUpperCase().trim();
+            unitKerjaUpper = unitKerjaUpper.replace(/SD NEGERI /g, "SDN ").replace(/SD N /g, "SDN ");
+            unitKerjaUpper = unitKerjaUpper.replace(/SMP NEGERI /g, "SMPN ").replace(/SMP N /g, "SMPN ");
+
+            for (const [kec, listSekolah] of Object.entries(mappingKecamatan)) {
+                if (listSekolah.some(sekolah => unitKerjaUpper.includes(sekolah.toUpperCase()))) {
+                    return kec;
+                }
+            }
+            
+            const fallbackKeywords = {
+                "Pekutatan": ["PEKUTATAN", "MEDEWI", "PULUKAN", "PANGYANGAN", "GUMRIH", "PENGERAGOAN", "ASAHDUREN", "MANGGISSARI"],
+                "Mendoyo": ["MENDOYO", "POHSANTEN", "PERGUNG", "TEGALCANGKRING", "DELODBRAWAH", "PENYARINGAN", "YEHEMBANG", "YEH SUMBUL", "YEHSUMBUL"],
+                "Jembrana": ["PERANCAK", "AIR KUNING", "SANGKARAGUNG", "DANGIN TUKADAYA", "DAUHWARU", "BATUAGUNG", "BUDENG", "PENDEM", "LOLOAN TIMUR", "YEH KUNING", "CANANG SARI", "JEMBRANA"],
+                "Negara": ["NEGARA", "LOLOAN BARAT", "BALER BALE AGUNG", "BANJAR TENGAH", "LELATENG", "TEGALBADENG", "CUPEL", "PENGAMBENGAN", "BALUK", "BANYUBIRU", "KALIAKAH", "BERANGBANG"],
+                "Melaya": ["MELAYA", "GILIMANUK", "NUSASARI", "EKASARI", "WARNASARI", "CANDIKUSUMA", "TUWED", "TUKADAYA", "MANISTUTU"]
+            };
+
+            for (const [kec, keywords] of Object.entries(fallbackKeywords)) {
+                if (keywords.some(kw => unitKerjaUpper.includes(kw))) {
+                    return kec;
+                }
+            }
+
+            return "Lainnya";
+        }
+
+        async function fetchData() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-status').classList.add('hidden');
+            
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    dbData = result.data;
+                    processDashboard();
+                    renderMainStatusTable();
+                    switchView('dashboard');
+                } else {
+                    alert("Gagal memuat data: " + result.message);
+                }
+            } catch (error) {
+                alert("Koneksi gagal. Pastikan sambungan internet aktif.");
+                console.error(error);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function switchView(viewName) {
+            ['dashboard', 'status'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                el.classList.add('hidden');
+                el.classList.remove('animate-apple-slide');
+                const nav = document.getElementById(`nav-${v}`);
+                nav.classList.remove('tab-active');
+                nav.classList.add('tab-inactive');
+            });
+            
+            const targetEl = document.getElementById(`view-${viewName}`);
+            targetEl.classList.remove('hidden');
+            void targetEl.offsetWidth; 
+            targetEl.classList.add('animate-apple-slide');
+            
+            const activeNav = document.getElementById(`nav-${viewName}`);
+            activeNav.classList.remove('tab-inactive');
+            activeNav.classList.add('tab-active');
+
+            if(window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if(!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function processDashboard() {
+            debugLainnyaList = [];
+            
+            const s1 = dbData["1 Pebruari 2022"] || [];
+            const s2 = dbData["1 Maret 2022"] || [];
+            
+            const validS1 = s1.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const validS2 = s2.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const allData = [...validS1, ...validS2];
+
+            const countS1 = validS1.length;
+            const countS2 = validS2.length;
+            const totalCurrent = allData.length;
+
+            const diffTotal = MAX_GURU_QUOTA - totalCurrent;
+            const pctTotal = Math.min(100, Math.round((totalCurrent / MAX_GURU_QUOTA) * 100));
+
+            // Card 1 Total Quota
+            document.getElementById('dash-total-all').innerText = `${totalCurrent}/${MAX_GURU_QUOTA}`;
+            document.getElementById('dash-total-diff').innerText = diffTotal >= 0 ? `Sisa ${diffTotal} dari kuota (${MAX_GURU_QUOTA})` : `Lebih ${Math.abs(diffTotal)} dari kuota`;
+            document.getElementById('dash-total-pct').innerText = `${pctTotal}%`;
+            
+            const totalBar = document.getElementById('dash-total-bar');
+            if (totalBar) totalBar.style.width = `${pctTotal}%`;
+
+            document.getElementById('dash-tot-s1').innerText = `${countS1}/${MAX_S1_QUOTA}`;
+            document.getElementById('dash-tot-s2').innerText = `${countS2}/${MAX_S2_QUOTA}`;
+            
+            // Detailed Calculations for Cards 2, 3, 4, 5 with Period Breakdown
+            const s1Lengkap = validS1.filter(d => (d.col10 || '').toString().trim().toLowerCase() === 'lengkap').length;
+            const s2Lengkap = validS2.filter(d => (d.col10 || '').toString().trim().toLowerCase() === 'lengkap').length;
+            const countLengkap = s1Lengkap + s2Lengkap;
+
+            const s1BelumLengkap = validS1.filter(d => (d.col10 || '').toString().trim().toLowerCase() === 'belum lengkap').length;
+            const s2BelumLengkap = validS2.filter(d => (d.col10 || '').toString().trim().toLowerCase() === 'belum lengkap').length;
+            const countBelumLengkap = s1BelumLengkap + s2BelumLengkap;
+
+            const s1Perbaikan = validS1.filter(d => (d.col10 || '').toString().trim().toLowerCase() === 'perbaikan').length;
+            const s2Perbaikan = validS2.filter(d => (d.col10 || '').toString().trim().toLowerCase() === 'perbaikan').length;
+            const countPerbaikan = s1Perbaikan + s2Perbaikan;
+
+            const s1Kosong = validS1.length - (s1Lengkap + s1BelumLengkap + s1Perbaikan);
+            const s2Kosong = validS2.length - (s2Lengkap + s2BelumLengkap + s2Perbaikan);
+            const countKosong = s1Kosong + s2Kosong;
+            
+            // Inject Card Main & Breakdown Values
+            document.getElementById('dash-lengkap').innerText = countLengkap;
+            document.getElementById('dash-lengkap-s1').innerText = s1Lengkap;
+            document.getElementById('dash-lengkap-s2').innerText = s2Lengkap;
+
+            document.getElementById('dash-belum-lengkap').innerText = countBelumLengkap;
+            document.getElementById('dash-belum-lengkap-s1').innerText = s1BelumLengkap;
+            document.getElementById('dash-belum-lengkap-s2').innerText = s2BelumLengkap;
+
+            document.getElementById('dash-perbaikan').innerText = countPerbaikan;
+            document.getElementById('dash-perbaikan-s1').innerText = s1Perbaikan;
+            document.getElementById('dash-perbaikan-s2').innerText = s2Perbaikan;
+
+            document.getElementById('dash-kosong').innerText = countKosong;
+            document.getElementById('dash-kosong-s1').innerText = s1Kosong;
+            document.getElementById('dash-kosong-s2').innerText = s2Kosong;
+
+            // District Stats Calculation
+            const stats = { "Pekutatan": {s1:0, s2:0}, "Mendoyo": {s1:0, s2:0}, "Jembrana": {s1:0, s2:0}, "Negara": {s1:0, s2:0}, "Melaya": {s1:0, s2:0}, "Lainnya": {s1:0, s2:0} };
+            
+            validS1.forEach(d => { 
+                let kec = getKecamatan(d.col7);
+                if(!stats[kec]) kec = "Lainnya";
+                stats[kec].s1++; 
+                if(kec === 'Lainnya') debugLainnyaList.push(`[1 Peb] ${d.col1} - Unit: ${d.col7 || '(Kosong)'}`);
+            });
+            validS2.forEach(d => { 
+                let kec = getKecamatan(d.col7);
+                if(!stats[kec]) kec = "Lainnya"; 
+                stats[kec].s2++; 
+                if(kec === 'Lainnya') debugLainnyaList.push(`[1 Mar] ${d.col1} - Unit: ${d.col7 || '(Kosong)'}`);
+            });
+
+            kecDataList = [];
+            for (const [kec, dt] of Object.entries(stats)) {
+                if(kec === 'Lainnya' && dt.s1 === 0 && dt.s2 === 0) continue; 
+                kecDataList.push({ kec, ...dt, total: dt.s1 + dt.s2 });
+            }
+
+            renderKecamatanTable();
+        }
+
+        // Render Kecamatan Table with Pagination
+        function renderKecamatanTable() {
+            const tbody = document.getElementById('dash-kecamatan-body');
+            const totalItems = kecDataList.length;
+            
+            let displayData = kecDataList;
+            let totalPages = 1;
+
+            if (kecLimit !== 'all') {
+                const limitNum = parseInt(kecLimit, 10);
+                totalPages = Math.ceil(totalItems / limitNum) || 1;
+                if (kecCurrentPage > totalPages) kecCurrentPage = totalPages;
+                
+                const start = (kecCurrentPage - 1) * limitNum;
+                const end = start + limitNum;
+                displayData = kecDataList.slice(start, end);
+
+                const showingStart = totalItems === 0 ? 0 : start + 1;
+                const showingEnd = Math.min(end, totalItems);
+                document.getElementById('kec-page-info').innerText = `Menampilkan ${showingStart}-${showingEnd} dari ${totalItems} kecamatan`;
+            } else {
+                document.getElementById('kec-page-info').innerText = `Menampilkan seluruh ${totalItems} kecamatan`;
+            }
+
+            let htmlTbody = '';
+            displayData.forEach(item => {
+                const { kec, s1, s2, total } = item;
+                let trClass = "hover:bg-slate-50 transition cursor-pointer apple-btn";
+                let clickAction = `onclick="showDetailByKecamatan('${kec}')"`;
+                
+                if(kec === 'Lainnya') {
+                    trClass += " bg-rose-50/50 hover:bg-rose-100/50";
+                    clickAction = `onclick="showDebugLainnya()"`;
+                }
+
+                htmlTbody += `
+                    <tr class="${trClass}" ${clickAction} title="Klik untuk melihat guru di UPT Kecamatan ${kec}">
+                        <td class="py-4 px-6 font-bold text-slate-800 flex items-center gap-2 sticky left-0 bg-white z-10">
+                            <i class="fi fi-sr-marker text-army-green text-sm"></i>
+                            <span>${kec}</span> 
+                            ${kec === 'Lainnya' ? '<span class="bg-rose-100 text-rose-800 text-[10px] px-2 py-0.5 rounded-full font-bold">PERLU DIPERIKSA</span>' : ''}
+                        </td>
+                        <td class="py-4 px-6 text-center"><span class="bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs">${s1}</span></td>
+                        <td class="py-4 px-6 text-center"><span class="bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-xl text-xs">${s2}</span></td>
+                        <td class="py-4 px-6 text-center font-black text-army-green text-base">${total}</td>
+                        <td class="py-4 px-6 text-center text-xs font-bold text-army-green">
+                            <span class="inline-flex items-center gap-1 bg-army-green/10 text-army-green px-3 py-1 rounded-xl">
+                                <span>Detail</span> <i class="fi fi-rr-angle-small-right"></i>
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if(displayData.length === 0) {
+                htmlTbody = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-bold">Tidak ada data kecamatan.</td></tr>`;
+            }
+
+            tbody.innerHTML = htmlTbody;
+            renderPaginationBtns('kec-pagination-btns', totalPages, kecCurrentPage, 'changeKecPage');
+        }
+
+        function changeKecLimit(val) {
+            kecLimit = val;
+            kecCurrentPage = 1;
+            renderKecamatanTable();
+        }
+
+        function changeKecPage(newPage) {
+            kecCurrentPage = newPage;
+            renderKecamatanTable();
+        }
+
+        function showDetailStatus(statusFilter) {
+            const modal = document.getElementById('modal-detail-status');
+            currentDetailStatusFilter = statusFilter;
+            
+            document.getElementById('detail-search-input').value = '';
+            document.getElementById('detail-filter-kec').value = 'all';
+            
+            const title = document.getElementById('detail-modal-title');
+            title.innerHTML = `Data Guru: <span class="${statusFilter === 'Perbaikan' ? 'text-rose-600' : (statusFilter === 'Belum Lengkap' ? 'text-orange-500' : (statusFilter === 'Lengkap' ? 'text-emerald-600' : 'text-slate-600'))}">${statusFilter}</span>`;
+            
+            detailCurrentPage = 1;
+            renderDetailHeader();
+            renderDetailTable();
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function showDetailByKecamatan(kecName) {
+            const modal = document.getElementById('modal-detail-status');
+            currentDetailStatusFilter = `Kecamatan: ${kecName}`;
+            
+            document.getElementById('detail-search-input').value = '';
+            document.getElementById('detail-filter-kec').value = kecName;
+            
+            const title = document.getElementById('detail-modal-title');
+            title.innerHTML = `Data Guru UPT Kecamatan: <span class="text-army-green font-extrabold">${kecName}</span>`;
+            
+            detailCurrentPage = 1;
+            renderDetailHeader();
+            renderDetailTable();
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function renderDetailHeader() {
+            const thead = document.getElementById('detail-table-head');
+            const isNeedReasonCol = (currentDetailStatusFilter === 'Belum Lengkap' || currentDetailStatusFilter === 'Perbaikan');
+
+            if (isNeedReasonCol) {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-3.5 px-4 font-bold min-w-[110px]">Kecamatan</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[200px]">Nama Lengkap</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[140px]">NIP</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[200px]">Sekolah (Unit Kerja)</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[180px] text-amber-200">Catatan Kekurangan</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-3.5 px-4 font-bold min-w-[110px]">Kecamatan</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[220px]">Nama Lengkap</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[150px]">NIP</th>
+                        <th class="py-3.5 px-4 font-bold min-w-[250px]">Sekolah (Unit Kerja)</th>
+                    </tr>
+                `;
+            }
+        }
+
+        function resetDetailPagesAndRender() {
+            detailCurrentPage = 1;
+            renderDetailTable();
+        }
+
+        function renderDetailTable() {
+            const tbody = document.getElementById('detail-table-body');
+            const searchQ = document.getElementById('detail-search-input').value.toLowerCase().trim();
+            const kecQ = document.getElementById('detail-filter-kec').value;
+
+            const s1 = dbData["1 Pebruari 2022"] || [];
+            const s2 = dbData["1 Maret 2022"] || [];
+            const validS1 = s1.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const validS2 = s2.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const allData = [...validS1, ...validS2];
+            
+            let filtered = [];
+            if (currentDetailStatusFilter.startsWith('Kecamatan:')) {
+                filtered = allData;
+            } else if (currentDetailStatusFilter === 'Belum Di Verifikasi') {
+                filtered = allData.filter(d => {
+                    const stat = (d.col10 || '').toString().trim().toLowerCase();
+                    return stat !== 'lengkap' && stat !== 'belum lengkap' && stat !== 'perbaikan';
+                });
+            } else {
+                filtered = allData.filter(d => (d.col10 || '').toString().trim().toLowerCase() === currentDetailStatusFilter.toLowerCase());
+            }
+
+            if (searchQ) {
+                filtered = filtered.filter(d => 
+                    (d.col1 || '').toString().toLowerCase().includes(searchQ) || 
+                    (d.col2 || '').toString().toLowerCase().includes(searchQ)
+                );
+            }
+
+            if (kecQ !== 'all') {
+                filtered = filtered.filter(d => getKecamatan(d.col7) === kecQ);
+            }
+
+            filtered.sort((a, b) => {
+                const kecA = getKecamatan(a.col7);
+                const kecB = getKecamatan(b.col7);
+                if (kecA < kecB) return -1;
+                if (kecA > kecB) return 1;
+                return (a.col1 || '').toString().localeCompare((b.col1 || '').toString());
+            });
+
+            currentFilteredDetailData = filtered;
+            const totalItems = filtered.length;
+
+            let displayData = filtered;
+            let totalPages = 1;
+
+            if (detailLimit !== 'all') {
+                const limitNum = parseInt(detailLimit, 10);
+                totalPages = Math.ceil(totalItems / limitNum) || 1;
+                if (detailCurrentPage > totalPages) detailCurrentPage = totalPages;
+                
+                const start = (detailCurrentPage - 1) * limitNum;
+                const end = start + limitNum;
+                displayData = filtered.slice(start, end);
+
+                const showingStart = totalItems === 0 ? 0 : start + 1;
+                const showingEnd = Math.min(end, totalItems);
+                document.getElementById('detail-page-info').innerText = `Menampilkan ${showingStart}-${showingEnd} dari ${totalItems} data`;
+            } else {
+                document.getElementById('detail-page-info').innerText = `Menampilkan seluruh ${totalItems} data`;
+            }
+
+            const isNeedReasonCol = (currentDetailStatusFilter === 'Belum Lengkap' || currentDetailStatusFilter === 'Perbaikan');
+            let html = '';
+
+            displayData.forEach(d => {
+                const kec = getKecamatan(d.col7);
+                const kecBadgeColor = kec === 'Lainnya' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700';
+                const safeName = (d.col1 || '').replace(/'/g, "\\'");
+
+                let extraColHtml = '';
+                if (isNeedReasonCol) {
+                    extraColHtml = `<td class="py-3.5 px-4 text-xs text-rose-600 font-semibold italic">${d.col11 || '<span class="text-slate-300">Belum diisi</span>'}</td>`;
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3.5 px-4"><span class="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-lg ${kecBadgeColor}">${kec}</span></td>
+                        <td class="py-3.5 px-4 font-extrabold text-slate-900">
+                            <button onclick="openFormCardFromTable('${safeName}')" class="apple-btn text-army-green hover:underline font-extrabold text-left flex items-center gap-1.5 focus:outline-none">
+                                <span>${d.col1 || '-'}</span>
+                                <i class="fi fi-rr-edit text-xs"></i>
+                            </button>
+                        </td>
+                        <td class="py-3.5 px-4 text-xs font-mono font-semibold text-slate-500">${d.col2 || '-'}</td>
+                        <td class="py-3.5 px-4 text-xs text-slate-700 font-bold">${d.col7 || '-'}</td>
+                        ${extraColHtml}
+                    </tr>
+                `;
+            });
+            
+            const colSpanVal = isNeedReasonCol ? 5 : 4;
+            if(filtered.length === 0) {
+                html = `<tr><td colspan="${colSpanVal}" class="text-center py-12 text-slate-400 font-bold">Data tidak ditemukan berdasarkan kriteria pencarian/filter.</td></tr>`;
+            }
+            
+            tbody.innerHTML = html;
+            renderPaginationBtns('detail-pagination-btns', totalPages, detailCurrentPage, 'changeDetailPage');
+        }
+
+        function changeDetailLimit(val) {
+            detailLimit = val;
+            detailCurrentPage = 1;
+            renderDetailTable();
+        }
+
+        function changeDetailPage(newPage) {
+            detailCurrentPage = newPage;
+            renderDetailTable();
+        }
+
+        function copyToClipboard() {
+            if(!currentFilteredDetailData || currentFilteredDetailData.length === 0) {
+                alert("Tidak ada data untuk disalin.");
+                return;
+            }
+
+            let headerText = "";
+            if (currentDetailStatusFilter === 'Belum Di Verifikasi') {
+                headerText = "Berikut ini adalah Daftar nama guru PPPK yang belum melakukan verifikasi berkas:\n\n";
+            } else if (currentDetailStatusFilter === 'Belum Lengkap') {
+                headerText = "Berikut ini adalah Daftar nama guru PPPK yang berkasnya belum lengkap:\n\n";
+            } else if (currentDetailStatusFilter === 'Perbaikan') {
+                headerText = "Berikut ini adalah Daftar nama guru PPPK yang belum memperbaiki berkas:\n\n";
+            } else {
+                headerText = "Berikut ini adalah Daftar nama guru PPPK:\n\n";
+            }
+
+            let bodyText = currentFilteredDetailData.map((d, index) => {
+                let rowStr = `${index + 1}. ${d.col1} - Unit Kerja: ${d.col7 || '-'}`;
+                if(d.col11 && (currentDetailStatusFilter === 'Belum Lengkap' || currentDetailStatusFilter === 'Perbaikan')) {
+                    rowStr += ` (Catatan: ${d.col11})`;
+                }
+                return rowStr;
+            }).join('\n');
+
+            const footerText = `\n\nTotal: ${currentFilteredDetailData.length} orang`;
+            const fullMessage = headerText + bodyText + footerText;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = fullMessage;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert("✓ Teks berhasil disalin ke clipboard! Siap ditempel ke WhatsApp.");
+            } catch (err) {
+                alert("Gagal menyalin teks.");
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function openFormCardFromTable(namaGuru) {
+            closeDetailStatus();
+            openModalSearch();
+            document.getElementById('searchInput').value = namaGuru;
+            searchGuruModal();
+        }
+
+        function closeDetailStatus() {
+            document.getElementById('modal-detail-status').classList.add('hidden');
+            document.getElementById('modal-detail-status').classList.remove('flex');
+        }
+
+        function openModalExportExcel() {
+            document.getElementById('modal-export-excel').classList.remove('hidden');
+            document.getElementById('modal-export-excel').classList.add('flex');
+        }
+
+        function closeModalExportExcel() {
+            document.getElementById('modal-export-excel').classList.add('hidden');
+            document.getElementById('modal-export-excel').classList.remove('flex');
+        }
+
+        function toggleAllKec(master) {
+            const checkboxes = document.querySelectorAll('input[name="kec-opt"]');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        function executeExportExcel() {
+            const checkedKec = Array.from(document.querySelectorAll('input[name="kec-opt"]:checked')).map(cb => cb.value);
+            if (checkedKec.length === 0) {
+                alert("Pilih minimal satu kecamatan untuk diexport!");
+                return;
+            }
+
+            const s1 = dbData["1 Pebruari 2022"] || [];
+            const s2 = dbData["1 Maret 2022"] || [];
+            const validS1 = s1.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const validS2 = s2.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const allData = [...validS1, ...validS2];
+
+            const filteredForExport = allData.filter(d => checkedKec.includes(getKecamatan(d.col7)));
+
+            if (filteredForExport.length === 0) {
+                alert("Tidak ada data guru yang cocok dengan kecamatan yang dipilih.");
+                return;
+            }
+
+            let csvContent = "\uFEFFKecamatan,Nama,NIP,TMT,No.SK,Pangkat/Gol/Kel,Jabatan,Unit Kerja,Keterangan,Penjelasan,Status,Alasan,Sumber DB\n";
+
+            filteredForExport.forEach(d => {
+                const kec = getKecamatan(d.col7);
+                const row = [
+                    `"${kec}"`,
+                    `"${(d.col1 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col2 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col3 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col4 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col5 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col6 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col7 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col8 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col9 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col10 || '').replace(/"/g, '""')}"`,
+                    `"${(d.col11 || '').replace(/"/g, '""')}"`,
+                    `"${(d._sheet || '').replace(/"/g, '""')}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Data_PPPK_Jembrana_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            closeModalExportExcel();
+        }
+
+        function openModalSearch() {
+            const modal = document.getElementById('modal-search');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => document.getElementById('searchInput').focus(), 150);
+        }
+
+        function closeModalSearch() {
+            const modal = document.getElementById('modal-search');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('search-suggestions').classList.add('hidden');
+        }
+
+        function handleSearchInput(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const suggestionsBox = document.getElementById('search-suggestions');
+            
+            if (query.length < 2) {
+                suggestionsBox.classList.add('hidden');
+                return;
+            }
+
+            const allData = [...(dbData["1 Pebruari 2022"] || []), ...(dbData["1 Maret 2022"] || [])];
+            const validData = allData.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            
+            const matched = [];
+            const uniqueNames = new Set();
+            
+            for(let d of validData) {
+                const name = (d.col1 || '').toString();
+                if(name.toLowerCase().includes(query) && !uniqueNames.has(name)) {
+                    uniqueNames.add(name);
+                    matched.push(name);
+                    if(matched.length >= 7) break;
+                }
+            }
+
+            if(matched.length > 0) {
+                suggestionsBox.innerHTML = matched.map(name => 
+                    `<li class="p-3.5 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm text-slate-700 flex items-center gap-2 transition" onclick="selectSuggestion('${name.replace(/'/g, "\\'")}')">
+                        <i class="fi fi-rr-user text-slate-400"></i>
+                        <span>${highlightText(name, query)}</span>
+                    </li>`
+                ).join('');
+                suggestionsBox.classList.remove('hidden');
+            } else {
+                suggestionsBox.classList.add('hidden');
+            }
+        }
+
+        function highlightText(text, query) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="font-extrabold text-army-green">$1</span>');
+        }
+
+        function selectSuggestion(name) {
+            document.getElementById('searchInput').value = name;
+            document.getElementById('search-suggestions').classList.add('hidden');
+            searchGuruModal();
+        }
+
+        document.addEventListener('click', function(e) {
+            const input = document.getElementById('searchInput');
+            const dropdown = document.getElementById('search-suggestions');
+            if (input && dropdown) {
+                if(!e.target.closest('#searchInput') && !e.target.closest('#search-suggestions')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        });
+
+        function searchGuruModal() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const container = document.getElementById('modal-search-results');
+            document.getElementById('search-suggestions').classList.add('hidden');
+            
+            if (query === '' || query.length < 2) {
+                container.innerHTML = `<div class="text-center text-slate-500 mt-10 font-bold">Silakan ketik nama minimal 2 karakter.</div>`;
+                return;
+            }
+            
+            container.innerHTML = `<div class="text-center text-army-green mt-10 flex flex-col items-center justify-center animate-apple-fade"><i class="fi fi-rr-spinner text-3xl animate-spin mb-3"></i><span class="font-bold text-sm">Mencari profil guru...</span></div>`;
+
+            setTimeout(() => {
+                const s1 = dbData["1 Pebruari 2022"] || [];
+                const s2 = dbData["1 Maret 2022"] || [];
+                const validS1 = s1.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+                const validS2 = s2.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+                const allData = [...validS1, ...validS2];
+                
+                const results = allData.filter(d => (d.col1 || '').toString().toLowerCase().includes(query));
+
+                if (results.length === 0) {
+                    container.innerHTML = `
+                    <div class="text-center mt-8 p-6 bg-rose-50 rounded-2xl border border-rose-100 animate-apple-fade">
+                        <i class="fi fi-rr-exclamation text-rose-500 text-3xl mb-2"></i>
+                        <p class="text-rose-700 text-xs sm:text-sm font-bold">Data guru dengan kata kunci <strong>"${query}"</strong> tidak ditemukan.<br>Pastikan ejaan nama sudah benar.</p>
+                    </div>`;
+                    return;
+                }
+
+                let html = '';
+                results.forEach((guru) => {
+                    const uniqueId = `guru_${(guru._sheet || 'Sheet').replace(/ /g, '')}_${guru._row}`;
+                    const stat = (guru.col10 || '').toString().trim();
+                    const isNeedReason = (stat === 'Belum Lengkap' || stat === 'Perbaikan');
+                    
+                    const valColI = (guru.col8 || '').toString().trim();
+                    const valColJ = (guru.col9 || '').toString().trim();
+                    
+                    const isValidColI = valColI !== '' && valColI.toLowerCase() !== 'tidak';
+                    const isValidColJ = valColJ !== '' && valColJ.toLowerCase() !== 'tidak';
+                    
+                    let htmlExtraCols = '';
+                    if (isValidColI || isValidColJ) {
+                        const boxI = isValidColI ? `<div class="bg-rose-50 border border-rose-100 p-3.5 rounded-xl"><p class="text-rose-600 mb-1 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1"><i class="fi fi-rr-info"></i> Status Regrouping / Pemetaan</p><p class="text-rose-900 font-bold text-xs sm:text-sm">${valColI}</p></div>` : '';
+                        const boxJ = isValidColJ ? `<div class="bg-amber-50 border border-amber-100 p-3.5 rounded-xl"><p class="text-amber-700 mb-1 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1"><i class="fi fi-rr-document"></i> Keterangan Tambahan</p><p class="text-slate-900 font-bold text-xs sm:text-sm leading-relaxed">${valColJ}</p></div>` : '';
+                        
+                        htmlExtraCols = `
+                        <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-2 pt-3 border-t border-slate-100 animate-apple-fade">
+                            ${boxI} ${boxJ}
+                        </div>`;
+                    }
+
+                    html += `
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 border-l-8 border-l-army-green p-5 sm:p-6 flex flex-col lg:flex-row gap-6 transition-all hover:shadow-md animate-apple-slide relative overflow-hidden">
+                        
+                        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-xs sm:text-sm">
+                            <div class="col-span-1 md:col-span-2">
+                                <h3 class="text-xl sm:text-2xl font-black text-slate-900">${guru.col1 || ''}</h3>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-[10px] sm:text-xs rounded-full font-bold">SUMBER: ${guru._sheet || 'Tidak Diketahui'}</span>
+                                    <span class="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-[10px] sm:text-xs rounded-full font-mono font-bold">BARIS: ${guru._row}</span>
+                                </div>
+                            </div>
+                            
+                            <div><p class="text-slate-400 mb-0.5 text-[10px] font-extrabold uppercase tracking-wider">NIP</p><p class="font-extrabold text-slate-800 font-mono">${guru.col2 || '-'}</p></div>
+                            <div><p class="text-slate-400 mb-0.5 text-[10px] font-extrabold uppercase tracking-wider">TMT</p><p class="font-extrabold text-slate-800 font-mono">${guru.col3 || '-'}</p></div>
+                            <div><p class="text-slate-400 mb-0.5 text-[10px] font-extrabold uppercase tracking-wider">No. SK</p><p class="font-extrabold text-slate-800 font-mono">${guru.col4 || '-'}</p></div>
+                            <div><p class="text-slate-400 mb-0.5 text-[10px] font-extrabold uppercase tracking-wider">Pangkat/Gol/Kel</p><p class="font-extrabold text-slate-800 font-mono">${guru.col5 || '-'}</p></div>
+                            
+                            <div class="col-span-1 md:col-span-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <p class="text-slate-400 mb-1 text-[10px] font-extrabold uppercase tracking-wider">Sekolah / Unit Kerja</p>
+                                <p class="font-black text-army-green text-base sm:text-lg flex items-center gap-2">
+                                    <i class="fi fi-sr-marker text-sm"></i>
+                                    <span>${guru.col7 || '-'}</span>
+                                </p>
+                                <p class="text-slate-600 mt-2 text-xs border-t border-slate-200/80 pt-2 font-medium"><span class="font-bold text-slate-800">Jabatan:</span> ${guru.col6 || '-'}</p>
+                            </div>
+
+                            ${htmlExtraCols}
+                        </div>
+
+                        <!-- Panel Verifikasi Aksi -->
+                        <div class="w-full lg:w-[320px] shrink-0 bg-slate-50 p-5 rounded-2xl border border-slate-200/80 flex flex-col justify-start">
+                            <h4 class="font-extrabold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2 uppercase text-xs tracking-wider">
+                                <i class="fi fi-sr-checkbox text-army-green text-sm"></i>
+                                <span>Aksi Verifikasi</span>
+                            </h4>
+                            
+                            <div class="space-y-2.5 mb-2">
+                                <label class="apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer ${stat === 'Lengkap' ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-100' : 'bg-white border-slate-200'}">
+                                    <input type="checkbox" name="stat_${uniqueId}" value="Lengkap" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" 
+                                        onchange="handleCheckbox(this, '${guru._sheet}', ${guru._row}, '${uniqueId}')"
+                                        ${stat === 'Lengkap' ? 'checked' : ''}>
+                                    <span class="font-extrabold text-emerald-800 text-xs sm:text-sm flex items-center gap-1.5"><i class="fi fi-sr-check-circle"></i> Valid / Lengkap</span>
+                                </label>
+                                
+                                <label class="apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer ${stat === 'Belum Lengkap' ? 'bg-orange-50 border-orange-300 ring-2 ring-orange-100' : 'bg-white border-slate-200'}">
+                                    <input type="checkbox" name="stat_${uniqueId}" value="Belum Lengkap" class="w-4 h-4 text-orange-500 rounded focus:ring-orange-400"
+                                        onchange="handleCheckbox(this, '${guru._sheet}', ${guru._row}, '${uniqueId}')"
+                                        ${stat === 'Belum Lengkap' ? 'checked' : ''}>
+                                    <span class="font-extrabold text-orange-800 text-xs sm:text-sm flex items-center gap-1.5"><i class="fi fi-sr-time-past"></i> Belum Lengkap</span>
+                                </label>
+                                
+                                <label class="apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer ${stat === 'Perbaikan' ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-100' : 'bg-white border-slate-200'}">
+                                    <input type="checkbox" name="stat_${uniqueId}" value="Perbaikan" class="w-4 h-4 text-rose-600 rounded focus:ring-rose-500"
+                                        onchange="handleCheckbox(this, '${guru._sheet}', ${guru._row}, '${uniqueId}')"
+                                        ${stat === 'Perbaikan' ? 'checked' : ''}>
+                                    <span class="font-extrabold text-rose-800 text-xs sm:text-sm flex items-center gap-1.5"><i class="fi fi-sr-exclamation"></i> Perlu Perbaikan</span>
+                                </label>
+                            </div>
+
+                            <div id="box-alasan-${uniqueId}" class="${isNeedReason ? 'block animate-apple-fade' : 'hidden'} transition-all mt-3 border-t border-slate-200 pt-3">
+                                <label class="block text-[11px] font-extrabold text-rose-600 mb-1.5 uppercase tracking-wide">Alasan Kekurangan Data</label>
+                                <textarea id="val-alasan-${uniqueId}" rows="3" class="w-full p-2.5 border border-rose-200 rounded-xl text-xs sm:text-sm focus:ring-rose-500 focus:border-rose-500 outline-none bg-white resize-none font-medium" placeholder="Tuliskan catatan SK yang belum ada...">${guru.col11 || ''}</textarea>
+                                <button onclick="saveAlasan('${guru._sheet}', ${guru._row}, '${uniqueId}')" class="apple-btn mt-2.5 w-full bg-rose-600 text-white font-extrabold text-xs py-2.5 rounded-xl hover:bg-rose-700 transition flex justify-center items-center gap-2 shadow-xs">
+                                    <i class="fi fi-rr-disk"></i>
+                                    <span>Simpan Catatan</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }, 250);
+        }
+
+        async function handleCheckbox(checkbox, sheet, row, uniqueId) {
+            const group = document.getElementsByName(checkbox.name);
+            group.forEach(cb => { 
+                if(cb !== checkbox) cb.checked = false; 
+                const label = cb.parentElement;
+                label.className = "apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer bg-white border-slate-200";
+            });
+            
+            if(checkbox.checked) {
+                if(checkbox.value === 'Lengkap') checkbox.parentElement.className = "apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer bg-emerald-50 border-emerald-300 ring-2 ring-emerald-100";
+                if(checkbox.value === 'Belum Lengkap') checkbox.parentElement.className = "apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer bg-orange-50 border-orange-300 ring-2 ring-orange-100";
+                if(checkbox.value === 'Perbaikan') checkbox.parentElement.className = "apple-btn flex items-center gap-3 p-3 rounded-xl border cursor-pointer bg-rose-50 border-rose-300 ring-2 ring-rose-100";
+            }
+            
+            const boxAlasan = document.getElementById(`box-alasan-${uniqueId}`);
+            const inputAlasan = document.getElementById(`val-alasan-${uniqueId}`);
+
+            if (checkbox.checked && (checkbox.value === 'Belum Lengkap' || checkbox.value === 'Perbaikan')) {
+                boxAlasan.classList.remove('hidden');
+                boxAlasan.classList.add('block');
+                boxAlasan.classList.add('animate-apple-fade');
+            } else {
+                boxAlasan.classList.remove('block');
+                boxAlasan.classList.add('hidden');
+            }
+
+            const newStatus = checkbox.checked ? checkbox.value : '';
+            const dbRef = (dbData[sheet] || []).find(d => d._row === row);
+            
+            if(dbRef) {
+                dbRef.col10 = newStatus;
+                if (newStatus === 'Lengkap') {
+                    dbRef.col11 = ''; 
+                    if(inputAlasan) inputAlasan.value = ''; 
+                }
+            }
+
+            updateToSpreadsheet({
+                action: 'update_status',
+                sheet: sheet,
+                row: row,
+                status: newStatus
+            });
+            
+            if (newStatus === 'Lengkap') {
+                updateToSpreadsheet({
+                    action: 'update_alasan',
+                    sheet: sheet,
+                    row: row,
+                    alasan: ''
+                });
+            }
+            
+            processDashboard(); 
+            renderMainStatusTable();
+        }
+
+        function saveAlasan(sheet, row, uniqueId) {
+            const alasanVal = document.getElementById(`val-alasan-${uniqueId}`).value;
+            const btn = event.currentTarget;
+            
+            const dbRef = (dbData[sheet] || []).find(d => d._row === row);
+            if(dbRef) dbRef.col11 = alasanVal;
+
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fi fi-rr-spinner animate-spin"></i><span>Menyimpan...</span>`;
+            
+            updateToSpreadsheet({
+                action: 'update_alasan',
+                sheet: sheet,
+                row: row,
+                alasan: alasanVal
+            }).then(() => {
+                btn.innerHTML = `<i class="fi fi-rr-check font-bold"></i><span>Tersimpan</span>`;
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                btn.classList.remove('bg-rose-600', 'hover:bg-rose-700');
+                setTimeout(() => { 
+                    btn.innerHTML = originalHTML; 
+                    btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                    btn.classList.add('bg-rose-600', 'hover:bg-rose-700');
+                }, 2000);
+            });
+        }
+
+        async function updateToSpreadsheet(payload) {
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                console.error("Gagal update data:", error);
+                alert("Koneksi tersendat. Perubahan akan disinkronkan ulang saat refresh.");
+            }
+        }
+
+        function showDebugLainnya() {
+            const container = document.getElementById('debug-lainnya');
+            const list = document.getElementById('list-lainnya');
+            if(container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                container.classList.add('animate-apple-fade');
+                list.innerHTML = debugLainnyaList.map(item => `<li>${item}</li>`).join('');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function resetStatusPageAndRender() {
+            statusCurrentPage = 1;
+            renderMainStatusTable();
+        }
+
+        // Main Status Table with Fixed Sticky Header & Pagination
+        function renderMainStatusTable() {
+            const filterVal = document.getElementById('filter-status').value;
+            
+            const s1 = dbData["1 Pebruari 2022"] || [];
+            const s2 = dbData["1 Maret 2022"] || [];
+            const validS1 = s1.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const validS2 = s2.filter(d => d.col1 && d.col1.toString().trim().toUpperCase() !== 'NAMA');
+            const allData = [...validS1, ...validS2];
+            
+            const filteredData = allData.filter(d => {
+                if (filterVal === 'all') return true;
+                const stat = (d.col10 || '').toString().trim();
+                return stat === filterVal;
+            });
+
+            const totalItems = filteredData.length;
+            let displayData = filteredData;
+            let totalPages = 1;
+
+            if (statusLimit !== 'all') {
+                const limitNum = parseInt(statusLimit, 10);
+                totalPages = Math.ceil(totalItems / limitNum) || 1;
+                if (statusCurrentPage > totalPages) statusCurrentPage = totalPages;
+                
+                const start = (statusCurrentPage - 1) * limitNum;
+                const end = start + limitNum;
+                displayData = filteredData.slice(start, end);
+
+                const showingStart = totalItems === 0 ? 0 : start + 1;
+                const showingEnd = Math.min(end, totalItems);
+                document.getElementById('status-page-info').innerText = `Menampilkan ${showingStart}-${showingEnd} dari ${totalItems} data`;
+            } else {
+                document.getElementById('status-page-info').innerText = `Menampilkan seluruh ${totalItems} data`;
+            }
+
+            const tbody = document.getElementById('status-table-body');
+            let html = '';
+
+            displayData.forEach(d => {
+                const statVal = (d.col10 || '').toString().trim();
+                
+                let badgeClass = "bg-slate-100 text-slate-600 border border-slate-200";
+                let statText = "Belum Ditinjau";
+                let iconClass = "fi fi-rr-time-past";
+                
+                if(statVal === 'Lengkap') { 
+                    badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-200"; 
+                    statText = "Lengkap"; 
+                    iconClass = "fi fi-sr-check-circle text-emerald-600";
+                }
+                if(statVal === 'Belum Lengkap') { 
+                    badgeClass = "bg-orange-100 text-orange-800 border border-orange-200"; 
+                    statText = "Belum Lengkap"; 
+                    iconClass = "fi fi-sr-time-past text-orange-600";
+                }
+                if(statVal === 'Perbaikan') { 
+                    badgeClass = "bg-rose-100 text-rose-800 border border-rose-200"; 
+                    statText = "Perbaikan"; 
+                    iconClass = "fi fi-sr-exclamation text-rose-600";
+                }
+
+                html += `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="py-4 px-6 sticky left-0 bg-white z-10">
+                        <p class="font-extrabold text-slate-900">${d.col1 || ''}</p>
+                        <p class="text-xs text-slate-500 font-mono mt-0.5 font-bold">NIP: ${d.col2 || '-'}</p>
+                    </td>
+                    <td class="py-4 px-6 text-slate-700 font-bold text-xs sm:text-sm">${d.col7 || '-'}</td>
+                    <td class="py-4 px-6">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-extrabold tracking-wider uppercase rounded-lg shadow-2xs ${badgeClass}">
+                            <i class="${iconClass}"></i>
+                            <span>${statText}</span>
+                        </span>
+                    </td>
+                    <td class="py-4 px-6 text-slate-600 font-semibold italic text-xs max-w-xs truncate" title="${d.col11 || '-'}">
+                        ${d.col11 || '-'}
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                        <span class="bg-slate-100 border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">${d._sheet}</span>
+                    </td>
+                </tr>
+                `;
+            });
+
+            if(filteredData.length === 0) {
+                html = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold">Tidak ada data untuk status ini.</td></tr>`;
+            }
+            tbody.innerHTML = html;
+            renderPaginationBtns('status-pagination-btns', totalPages, statusCurrentPage, 'changeStatusPage');
+        }
+
+        function changeStatusLimit(val) {
+            statusLimit = val;
+            statusCurrentPage = 1;
+            renderMainStatusTable();
+        }
+
+        function changeStatusPage(newPage) {
+            statusCurrentPage = newPage;
+            renderMainStatusTable();
+        }
+
+        // Shared Helper for Apple-Style Pagination Controls
+        function renderPaginationBtns(containerId, totalPages, currentPage, changeFuncName) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Prev Button
+            const isPrevDisabled = currentPage === 1;
+            html += `<button onclick="${changeFuncName}(${currentPage - 1})" ${isPrevDisabled ? 'disabled' : ''} class="apple-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition flex items-center justify-center">
+                <i class="fi fi-rr-angle-small-left text-sm"></i>
+            </button>`;
+
+            // Page Buttons Windowing Logic
+            let pages = [];
+            if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+                if (currentPage <= 3) {
+                    pages = [1, 2, 3, 4, '...', totalPages];
+                } else if (currentPage >= totalPages - 2) {
+                    pages = [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                } else {
+                    pages = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+                }
+            }
+
+            pages.forEach(p => {
+                if (p === '...') {
+                    html += `<span class="px-2 py-1 text-slate-400 font-extrabold text-xs">...</span>`;
+                } else if (p === currentPage) {
+                    html += `<button class="px-3 py-1.5 rounded-xl bg-army-green text-white font-extrabold text-xs shadow-xs transition">${p}</button>`;
+                } else {
+                    html += `<button onclick="${changeFuncName}(${p})" class="apple-btn px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs transition">${p}</button>`;
+                }
+            });
+
+            // Next Button
+            const isNextDisabled = currentPage === totalPages;
+            html += `<button onclick="${changeFuncName}(${currentPage + 1})" ${isNextDisabled ? 'disabled' : ''} class="apple-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition flex items-center justify-center">
+                <i class="fi fi-rr-angle-small-right text-sm"></i>
+            </button>`;
+
+            container.innerHTML = html;
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
