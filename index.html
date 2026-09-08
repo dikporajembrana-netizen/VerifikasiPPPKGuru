@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin PPPK Jembrana - Apple-Style Dashboard</title>
 
-    <!-- Chosen Palette: Modern Minimalist Pure White & Army Green (#4B5320) with Vibrant Contrast Metric Cards and Apple-style Glassmorphism UI -->
-    <!-- Application Structure Plan: Single-page interactive administration dashboard featuring Apple iOS inspired aesthetic with spring animations, smooth scale & slide dynamic interactions, Flaticon UI iconography, glassmorphic floating headers and modals, responsive data tables with sticky headers and mobile scroll optimization, dynamic pagination for all tables, instant teacher search, live verification state management, and custom district-filtered Excel CSV exports. -->
-    <!-- Visualization & Content Choices: Metric KPI status cards with period breakdown stats, Flaticon CSS icons for all actions and statuses, dynamic HTML data tables with full pagination and horizontal smooth scrolling for desktop/mobile compatibility, vanilla JS state management connected to Google Apps Script REST API, and Apple modal drawers with copy-to-clipboard functionality. Confirming NO SVG tags / NO Mermaid JS. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1315,33 +1310,96 @@
                 return;
             }
 
-            let csvContent = "\uFEFFKecamatan,Nama,NIP,TMT,No.SK,Pangkat/Gol/Kel,Jabatan,Unit Kerja,Keterangan,Penjelasan,Status,Alasan,Sumber DB\n";
+            // Fungsi untuk membersihkan karakter khusus agar tabel HTML tidak rusak
+            const escapeHTML = str => {
+                if (!str) return '';
+                return str.toString().replace(/[&<>'"]/g, tag => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+                }[tag]));
+            };
+
+            // Menggunakan struktur HTML -> XML Excel untuk memanipulasi format cell via CSS (mso-number-format)
+            let xlsContent = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Data Guru PPPK</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; font-family: Arial, sans-serif; }
+                        th, td { border: 1px solid #dddddd; padding: 5px; }
+                        th { background-color: #4B5320; color: #ffffff; font-weight: bold; }
+                        .text-format { mso-number-format: "\\@"; } /* Perintah rahasia memaksa Excel membaca sel sebagai TEXT murni */
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kecamatan</th>
+                                <th>Nama</th>
+                                <th>NIP</th>
+                                <th>TMT</th>
+                                <th>No.SK</th>
+                                <th>Pangkat/Gol/Kel</th>
+                                <th>Jabatan</th>
+                                <th>Unit Kerja</th>
+                                <th>Keterangan</th>
+                                <th>Penjelasan</th>
+                                <th>Status</th>
+                                <th>Alasan</th>
+                                <th>Sumber DB</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
 
             filteredForExport.forEach(d => {
                 const kec = getKecamatan(d.col7);
-                const row = [
-                    `"${kec}"`,
-                    `"${(d.col1 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col2 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col3 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col4 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col5 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col6 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col7 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col8 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col9 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col10 || '').replace(/"/g, '""')}"`,
-                    `"${(d.col11 || '').replace(/"/g, '""')}"`,
-                    `"${(d._sheet || '').replace(/"/g, '""')}"`
-                ];
-                csvContent += row.join(",") + "\n";
+                xlsContent += `
+                            <tr>
+                                <td>${escapeHTML(kec)}</td>
+                                <td>${escapeHTML(d.col1)}</td>
+                                <td class="text-format">${escapeHTML(d.col2)}</td>
+                                <td class="text-format">${escapeHTML(d.col3)}</td>
+                                <td class="text-format">${escapeHTML(d.col4)}</td>
+                                <td>${escapeHTML(d.col5)}</td>
+                                <td>${escapeHTML(d.col6)}</td>
+                                <td>${escapeHTML(d.col7)}</td>
+                                <td>${escapeHTML(d.col8)}</td>
+                                <td>${escapeHTML(d.col9)}</td>
+                                <td>${escapeHTML(d.col10)}</td>
+                                <td>${escapeHTML(d.col11)}</td>
+                                <td>${escapeHTML(d._sheet)}</td>
+                            </tr>
+                `;
             });
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            xlsContent += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            // Membuat Blob menggunakan tipe dokumen MS Excel dan ekstensi .xls
+            const blob = new Blob([xlsContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Data_PPPK_Jembrana_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `Data_PPPK_Jembrana_${new Date().toISOString().slice(0,10)}.xls`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
